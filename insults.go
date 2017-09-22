@@ -34,7 +34,7 @@ var (
 func InitInsults() {
 	nounData, err := ioutil.ReadFile(nounPath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to find noun file %s: %s", nounPath, err)
+		fmt.Fprint(os.Stderr, "failed to find noun file %s: %s\n", nounPath, err)
 		return
 	}
 	dataString := string(nounData)
@@ -46,7 +46,7 @@ func InitInsults() {
 
 	adjectiveData, err := ioutil.ReadFile(adjectivePath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to find noun file %s: %s", adjectivePath, err)
+		fmt.Fprint(os.Stderr, "failed to find noun file %s: %s\n", adjectivePath, err)
 		return
 	}
 
@@ -59,7 +59,7 @@ func InitInsults() {
 
 	adverbData, err := ioutil.ReadFile(adverbPath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to find noun file %s: %s", adverbPath, err)
+		fmt.Fprint(os.Stderr, "failed to find noun file %s: %s\n", adverbPath, err)
 		return
 	}
 
@@ -69,7 +69,7 @@ func InitInsults() {
 
 	verbData, err := ioutil.ReadFile(verbPath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to find noun file %s: %s", verbPath, err)
+		fmt.Fprint(os.Stderr, "failed to find noun file %s: %s\n", verbPath, err)
 		return
 	}
 
@@ -99,9 +99,14 @@ func NewInsult(target string) string {
 	insult := target + " is a "
 	rand.Seed(time.Now().Unix())
 
-	insult += Adjectives[rand.Intn(NumAdjectives)]
+	insult += Adjectives[RandomInt(NumAdjectives)]
 	insult += " "
-	insult += Nouns[rand.Intn(NumNouns)]
+	insult += Nouns[RandomInt(NumNouns)]
 
 	return insult
+}
+
+func RandomInt(max int) int {
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(max)
 }

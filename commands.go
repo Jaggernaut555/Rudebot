@@ -106,8 +106,18 @@ func cmdStats(session *discordgo.Session, message *discordgo.MessageCreate, args
 
 func cmdInsult(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	if len(args) < 2 {
-		session.Channel(message.ChannelID)
-		return
+		var channel, err = session.Channel(message.ChannelID)
+		if err != nil {
+			fmt.Printf("Could not find channel, %s\n", err)
+			return
+		}
+
+		guild, err := session.Guild(channel.GuildID)
+
+		members := guild.Members
+		user := members[RandomInt(len(members))].User
+
+		args = append(args, user.Mention())
 	}
 
 	reply := NewInsult(args[1])
