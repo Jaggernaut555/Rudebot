@@ -14,7 +14,7 @@ const (
 )
 
 // CmdFuncType Command function type
-type CmdFuncType func(*discordgo.Session, *discordgo.MessageCreate, string, []string)
+type CmdFuncType func(*discordgo.Session, *discordgo.MessageCreate, []string)
 
 // CmdFuncHelpType The type stored in the CmdFuncs map to map a function and helper text to a command
 type CmdFuncHelpType struct {
@@ -42,7 +42,7 @@ func InitCmds() {
 	}
 }
 
-func HandleCommand(session *discordgo.Session, message *discordgo.MessageCreate, cmd string, author string) {
+func HandleCommand(session *discordgo.Session, message *discordgo.MessageCreate, cmd string) {
 	args := strings.Split(cmd, " ")
 	if len(args) == 0 {
 		return
@@ -51,7 +51,7 @@ func HandleCommand(session *discordgo.Session, message *discordgo.MessageCreate,
 
 	if ok {
 		if !CmdFuncHelpPair.allowedChannelOnly || isValidChannel(session, message.ChannelID) {
-			CmdFuncHelpPair.function(session, message, author, args)
+			CmdFuncHelpPair.function(session, message, args)
 		}
 	} else if isValidChannel(session, message.ChannelID) {
 		var reply = fmt.Sprintf("I do not have command `%s`", args[0])
@@ -59,7 +59,7 @@ func HandleCommand(session *discordgo.Session, message *discordgo.MessageCreate,
 	}
 }
 
-func cmdHelp(session *discordgo.Session, message *discordgo.MessageCreate, cmder string, args []string) {
+func cmdHelp(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	// Build array of the keys in CmdFuncs
 	var keys []string
 	for k := range CmdFuncs {
@@ -77,20 +77,24 @@ func cmdHelp(session *discordgo.Session, message *discordgo.MessageCreate, cmder
 	session.ChannelMessageSend(message.ChannelID, cmds)
 }
 
-func cmdVersion(session *discordgo.Session, message *discordgo.MessageCreate, cmder string, args []string) {
+func cmdVersion(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	session.ChannelMessageSend(message.ChannelID, "Version: "+Version)
 }
 
-func cmdHere(session *discordgo.Session, message *discordgo.MessageCreate, cmder string, args []string) {
+func cmdHere(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	Channels[message.ChannelID] = true
-	session.ChannelMessageSend(message.ChannelID, "You fuckboi")
+	var newArgs []string
+	newArgs = append(newArgs, "insult")
+	newArgs = append(newArgs, message.Author.Mention())
+
+	cmdInsult(session, message, newArgs)
 }
 
-func cmdNotHere(session *discordgo.Session, message *discordgo.MessageCreate, cmder string, args []string) {
+func cmdNotHere(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	Channels[message.ChannelID] = false
 }
 
-func cmdStats(session *discordgo.Session, message *discordgo.MessageCreate, cmder string, args []string) {
+func cmdStats(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	var stats = "Stats:\n```\n"
 	stats += fmt.Sprintf("Nouns: %d\n", NumNouns)
 	stats += fmt.Sprintf("Adjectives: %d\n", NumAdjectives)
@@ -100,8 +104,9 @@ func cmdStats(session *discordgo.Session, message *discordgo.MessageCreate, cmde
 	session.ChannelMessageSend(message.ChannelID, stats)
 }
 
-func cmdInsult(session *discordgo.Session, message *discordgo.MessageCreate, cmder string, args []string) {
+func cmdInsult(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	if len(args) < 2 {
+		session.Channel(message.ChannelID)
 		return
 	}
 
@@ -109,6 +114,6 @@ func cmdInsult(session *discordgo.Session, message *discordgo.MessageCreate, cmd
 	session.ChannelMessageSend(message.ChannelID, reply)
 }
 
-func cmdRate(session *discordgo.Session, message *discordgo.MessageCreate, cmder string, args []string) {
+func cmdRate(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 
 }

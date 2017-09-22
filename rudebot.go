@@ -13,7 +13,7 @@ import (
 
 // Constants
 const (
-	Version = "v0.0.1"
+	Version = "v0.1.1"
 )
 
 // Global vars
@@ -69,7 +69,7 @@ func messageCreate(session *discordgo.Session, message *discordgo.MessageCreate)
 	}
 
 	if strings.HasPrefix(message.Content, CmdChar) {
-		HandleCommand(session, message, strings.TrimPrefix(message.Content, CmdChar), message.Author.ID)
+		HandleCommand(session, message, strings.TrimPrefix(message.Content, CmdChar))
 	}
 }
 
