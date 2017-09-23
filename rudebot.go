@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -13,7 +14,7 @@ import (
 
 // Constants
 const (
-	Version = "v0.2.17"
+	Version = "v0.3.4"
 )
 
 // Global vars
@@ -29,19 +30,19 @@ func init() {
 
 	Channels = map[string]bool{}
 	InitInsults()
-	//InitRatings()
+	InitRatings()
 	InitCmds()
 }
 
 func main() {
 	if Token == "" {
-		fmt.Println("You must provide a Discord authentication token (-t)")
+		log.Println("You must provide a Discord authentication token (-t)")
 		return
 	}
 
 	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
-		fmt.Println("error creating Discord session,", err)
+		log.Println("error creating Discord session,", err)
 		return
 	}
 
@@ -50,7 +51,7 @@ func main() {
 
 	err = dg.Open()
 	if err != nil {
-		fmt.Println("error opening connection,", err)
+		log.Println("error opening connection,", err)
 		return
 	}
 

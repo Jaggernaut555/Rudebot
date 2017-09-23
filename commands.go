@@ -44,6 +44,7 @@ func InitCmds() {
 		"worst":   CmdFuncHelpType{cmdWorst, "~insult that selects the lowest rated", true},
 		"good":    CmdFuncHelpType{cmdGood, "~insult that selects only positive rate", true},
 		"bad":     CmdFuncHelpType{cmdBad, "~insult that selects only negative rated", true},
+		"last":    CmdFuncHelpType{cmdLast, "~insult that selects the last used insult", true},
 	}
 }
 
@@ -115,10 +116,14 @@ func cmdRate(session *discordgo.Session, message *discordgo.MessageCreate, args 
 		return
 	}
 	switch args[1] {
+	case "lmao":
+		Rate(2)
 	case "up":
 		Rate(1)
 	case "down":
 		Rate(-1)
+	case "trash":
+		Rate(-2)
 	}
 }
 
@@ -155,6 +160,7 @@ func validateInsult(session *discordgo.Session, message *discordgo.MessageCreate
 func cmdInsult(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	args = validateInsult(session, message, args)
 	if args == nil {
+		fmt.Printf("Could not create valid insult")
 		return
 	}
 	reply := RandomInsult(args[1])
@@ -164,6 +170,7 @@ func cmdInsult(session *discordgo.Session, message *discordgo.MessageCreate, arg
 func cmdBest(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	args = validateInsult(session, message, args)
 	if args == nil {
+		fmt.Printf("Could not create valid insult")
 		return
 	}
 	reply := BestInsult(args[1])
@@ -173,6 +180,7 @@ func cmdBest(session *discordgo.Session, message *discordgo.MessageCreate, args 
 func cmdWorst(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	args = validateInsult(session, message, args)
 	if args == nil {
+		fmt.Printf("Could not create valid insult")
 		return
 	}
 	reply := WorstInsult(args[1])
@@ -182,6 +190,7 @@ func cmdWorst(session *discordgo.Session, message *discordgo.MessageCreate, args
 func cmdGood(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	args = validateInsult(session, message, args)
 	if args == nil {
+		fmt.Printf("Could not create valid insult")
 		return
 	}
 	reply := GoodInsult(args[1])
@@ -191,8 +200,19 @@ func cmdGood(session *discordgo.Session, message *discordgo.MessageCreate, args 
 func cmdBad(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
 	args = validateInsult(session, message, args)
 	if args == nil {
+		fmt.Printf("Could not create valid insult")
 		return
 	}
 	reply := BadInsult(args[1])
+	SendReply(session, message, reply)
+}
+
+func cmdLast(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
+	args = validateInsult(session, message, args)
+	if args == nil {
+		fmt.Printf("Could not create valid insult")
+		return
+	}
+	reply := LastInsult(args[1])
 	SendReply(session, message, reply)
 }

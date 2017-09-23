@@ -19,11 +19,11 @@ type Pair struct {
 type PairList []Pair
 
 const (
-	wordDirectory = "words"
-	nounPath      = "words/nouns/all.txt"
-	adjectivePath = "words/adjectives/all.txt"
-	adverbPath    = "words/adverbs/all.txt"
-	verbPath      = "words/verbs/all.txt"
+	WordDirectory = "words"
+	NounPath      = "words/nouns/all.txt"
+	AdjectivePath = "words/adjectives/all.txt"
+	AdverbPath    = "words/adverbs/all.txt"
+	VerbPath      = "words/verbs/all.txt"
 )
 
 var (
@@ -46,68 +46,67 @@ var (
 	VerbRatings      map[string]int
 )
 
-func InitInsults() {
-
-	rand.Seed(time.Now().Unix())
-
+func InitRatings() {
 	NounRatings = map[string]int{}
 	AdjectiveRatings = map[string]int{}
 	AdverbRatings = map[string]int{}
 	VerbRatings = map[string]int{}
-
-	nounData, err := ioutil.ReadFile(nounPath)
-	if err != nil {
-		log.Printf("failed to find noun file %s: %s\n", nounPath, err)
-		return
-	}
-	dataString := string(nounData)
-	dataLines := strings.Split(dataString, "\n")
-	NumNouns = len(dataLines)
-	Nouns = dataLines
-
-	CleanInput(Nouns)
-
-	adjectiveData, err := ioutil.ReadFile(adjectivePath)
-	if err != nil {
-		log.Printf("failed to find noun file %s: %s\n", adjectivePath, err)
-		return
-	}
-
-	dataString = string(adjectiveData)
-	dataLines = strings.Split(dataString, "\n")
-	NumAdjectives = len(dataLines)
-	Adjectives = dataLines
-
-	CleanInput(Adjectives)
-
-	adverbData, err := ioutil.ReadFile(adverbPath)
-	if err != nil {
-		log.Printf("failed to find noun file %s: %s\n", adverbPath, err)
-		return
-	}
-
-	dataString = string(adverbData)
-	dataLines = strings.Split(dataString, "\n")
-	NumAdverbs = len(dataLines)
-
-	verbData, err := ioutil.ReadFile(verbPath)
-	if err != nil {
-		log.Printf("failed to find noun file %s: %s\n", verbPath, err)
-		return
-	}
-
-	dataString = string(verbData)
-	dataLines = strings.Split(dataString, "\n")
-	NumVerbs = len(dataLines)
-
 }
 
+func InitInsults() {
+	rand.Seed(time.Now().Unix())
+	var err error
+
+	Nouns, NumNouns, err = ReadInput(NounPath)
+	if err != nil {
+		log.Printf("failed to find noun file %s: %s\n", NounPath, err)
+		return
+	}
+
+	Adjectives, NumAdjectives, err = ReadInput(AdjectivePath)
+	if err != nil {
+		log.Printf("failed to find adjective file %s: %s\n", AdjectivePath, err)
+		return
+	}
+
+	Adverbs, NumAdverbs, err = ReadInput(AdverbPath)
+	if err != nil {
+		log.Printf("failed to find adverb file %s: %s\n", AdverbPath, err)
+		return
+	}
+
+	Verbs, NumVerbs, err = ReadInput(VerbPath)
+	if err != nil {
+		log.Printf("failed to find verb file %s: %s\n", VerbPath, err)
+		return
+	}
+}
+
+//turns file into string array, array length, and possible error
+func ReadInput(path string) ([]string, int, error) {
+	data, err := ioutil.ReadFile(path)
+	str, num := SanitizeInput(data)
+	return str, num, err
+}
+
+//turns byte array into string array and string array length
+func SanitizeInput(data []byte) ([]string, int) {
+	dataString := string(data)
+	dataLines := strings.Split(dataString, "\n")
+
+	CleanInput(dataLines)
+
+	return dataLines, len(dataLines)
+}
+
+//Clean all white space for each string in array
 func CleanInput(input []string) {
 	for i, word := range input {
 		input[i] = StripWhiteSpace(word)
 	}
 }
 
+//Clean all white space from string and return it
 func StripWhiteSpace(str string) string {
 	return strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
@@ -126,11 +125,13 @@ func StartsWithVowel(str string) bool {
 	return false
 }
 
+//sets LastAdjective to adj and LastNoun to noun
 func SaveInsult(adj string, noun string) {
 	LastAdjective = adj
 	LastNoun = noun
 }
 
+//Creates and insult directed at target, using adj and noun Stores adj and noun for rating
 func CreateInsult(target string, adj string, noun string) string {
 	_, ok := NounRatings[noun]
 	if !ok {
@@ -156,6 +157,9 @@ func CreateInsult(target string, adj string, noun string) string {
 }
 
 func RandomInsult(target string) string {
+	if len(Nouns) == 0 || len(Adjectives) == 0 {
+		return "Not enough valid words"
+	}
 	return CreateInsult(target, Adjectives[RandomInt(NumAdjectives)], Nouns[RandomInt(NumNouns)])
 }
 
@@ -163,6 +167,7 @@ func RandomInt(max int) int {
 	return rand.Intn(max)
 }
 
+//Rates last used adjective and noun, changing rating by adding given value
 func Rate(value int) {
 	NounRatings[LastNoun] += value
 	AdjectiveRatings[LastAdjective] += value
@@ -287,6 +292,13 @@ func GetRatingLists() (PairList, PairList) {
 	sort.Sort(sort.Reverse(adjectives))
 
 	return adjectives, nouns
+}
+
+func LastInsult(target string) string {
+	if LastNoun == "" || LastAdjective == "" {
+		return "No previous insult"
+	}
+	return CreateInsult(target, LastAdjective, LastNoun)
 }
 
 func (p PairList) Len() int           { return len(p) }
