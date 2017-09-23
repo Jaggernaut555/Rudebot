@@ -231,8 +231,8 @@ func BadInsult(target string) string {
 
 	adjectives, nouns := GetRatingLists()
 
-	sort.Sort(sort.Reverse(nouns))
-	sort.Sort(sort.Reverse(adjectives))
+	sort.Sort(nouns)
+	sort.Sort(adjectives)
 
 	nouns = SplitNegative(nouns)
 	adjectives = SplitNegative(adjectives)
