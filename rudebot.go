@@ -13,7 +13,7 @@ import (
 
 // Constants
 const (
-	Version = "v0.1.2"
+	Version = "v0.2.0"
 )
 
 // Global vars
@@ -75,4 +75,8 @@ func messageCreate(session *discordgo.Session, message *discordgo.MessageCreate)
 
 func isValidChannel(session *discordgo.Session, channelID string) bool {
 	return Channels[channelID]
+}
+
+func SendReply(session *discordgo.Session, message *discordgo.MessageCreate, reply string) {
+	session.ChannelMessageSend(message.ChannelID, reply)
 }

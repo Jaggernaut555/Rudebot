@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"io/ioutil"
 	"math/rand"
 	"time"
 	"strings"
-	"os"
 	"unicode"
 
 	//"github.com/bwmarrin/discordgo"
@@ -34,7 +33,7 @@ var (
 func InitInsults() {
 	nounData, err := ioutil.ReadFile(nounPath)
 	if err != nil {
-		fmt.Fprint(os.Stderr, "failed to find noun file %s: %s\n", nounPath, err)
+		log.Printf("failed to find noun file %s: %s\n", nounPath, err)
 		return
 	}
 	dataString := string(nounData)
@@ -46,7 +45,7 @@ func InitInsults() {
 
 	adjectiveData, err := ioutil.ReadFile(adjectivePath)
 	if err != nil {
-		fmt.Fprint(os.Stderr, "failed to find noun file %s: %s\n", adjectivePath, err)
+		log.Printf("failed to find noun file %s: %s\n", adjectivePath, err)
 		return
 	}
 
@@ -59,7 +58,7 @@ func InitInsults() {
 
 	adverbData, err := ioutil.ReadFile(adverbPath)
 	if err != nil {
-		fmt.Fprint(os.Stderr, "failed to find noun file %s: %s\n", adverbPath, err)
+		log.Printf("failed to find noun file %s: %s\n", adverbPath, err)
 		return
 	}
 
@@ -69,7 +68,7 @@ func InitInsults() {
 
 	verbData, err := ioutil.ReadFile(verbPath)
 	if err != nil {
-		fmt.Fprint(os.Stderr, "failed to find noun file %s: %s\n", verbPath, err)
+		log.Printf("failed to find noun file %s: %s\n", verbPath, err)
 		return
 	}
 
@@ -94,14 +93,26 @@ func StripWhiteSpace(str string) string {
 	}, str)
 }
 
+func StartsWithVowel(str string) bool {
+	chr := str[0]
+	switch chr {
+		case 'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U':
+			return true;
+	}
+	return false
+}
+
 
 func NewInsult(target string) string {
-	insult := target + " is a "
-	rand.Seed(time.Now().Unix())
+	insult := target + " is a"
+	adj := Adjectives[RandomInt(NumAdjectives)]
+	noun := Nouns[RandomInt(NumNouns)]
 
-	insult += Adjectives[RandomInt(NumAdjectives)]
-	insult += " "
-	insult += Nouns[RandomInt(NumNouns)]
+	if StartsWithVowel(adj) {
+		insult += "n"
+	} 
+	insult += " " + adj
+	insult += " " + noun
 
 	return insult
 }
