@@ -1,33 +1,31 @@
 package main
 
 import (
-	"log"
 	"io/ioutil"
+	"log"
 	"math/rand"
-	"time"
 	"strings"
+	"time"
 	"unicode"
-
-	//"github.com/bwmarrin/discordgo"
 )
 
 const (
 	wordDirectory = "words"
-	nounPath = "words/nouns/all.txt"
+	nounPath      = "words/nouns/all.txt"
 	adjectivePath = "words/adjectives/all.txt"
-	adverbPath = "words/adverbs/all.txt"
-	verbPath = "words/verbs/all.txt"
+	adverbPath    = "words/adverbs/all.txt"
+	verbPath      = "words/verbs/all.txt"
 )
 
 var (
 	NumAdjectives int
-	Adjectives []string
-	NumAdverbs int
-	Adverbs []string
-	NumNouns int
-	Nouns []string
-	NumVerbs int
-	Verbs []string
+	Adjectives    []string
+	NumAdverbs    int
+	Adverbs       []string
+	NumNouns      int
+	Nouns         []string
+	NumVerbs      int
+	Verbs         []string
 )
 
 func InitInsults() {
@@ -96,12 +94,11 @@ func StripWhiteSpace(str string) string {
 func StartsWithVowel(str string) bool {
 	chr := str[0]
 	switch chr {
-		case 'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U':
-			return true;
+	case 'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U':
+		return true
 	}
 	return false
 }
-
 
 func NewInsult(target string) string {
 	insult := target + " is a"
@@ -110,7 +107,7 @@ func NewInsult(target string) string {
 
 	if StartsWithVowel(adj) {
 		insult += "n"
-	} 
+	}
 	insult += " " + adj
 	insult += " " + noun
 

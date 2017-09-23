@@ -36,10 +36,10 @@ func InitCmds() {
 		"here":    CmdFuncHelpType{cmdHere, "Allows the bot to insult users in this channel", false},
 		"nothere": CmdFuncHelpType{cmdNotHere, "Restricts the bot from insulting users in this channel", true},
 		"version": CmdFuncHelpType{cmdVersion, "Outputs the current bot version", true},
-		"insult":  CmdFuncHelpType{cmdInsult, "Follow by @user to insult that user", true},
+		"insult":  CmdFuncHelpType{cmdInsult, "Insults user mentioned in [arguments]", true},
 		//"rate":  CmdFuncHelpType{cmdRate, "Rate the insult dished out", true},
 		"stats":  CmdFuncHelpType{cmdStats, "Displays stats about this bot", true},
-		"define": CmdFuncHelpType{cmdDefine, "Follow by a word to search for a definition", true},
+		"define": CmdFuncHelpType{cmdDefine, "Displays definition of [arguments]", true},
 	}
 }
 
@@ -69,7 +69,7 @@ func cmdHelp(session *discordgo.Session, message *discordgo.MessageCreate, args 
 	sort.Strings(keys)
 
 	// Build message (sorted by keys) of the commands
-	var cmds = "Command notation: \n`" + CmdChar + "[command]`\n"
+	var cmds = "Command notation: \n`" + CmdChar + "[command] [arguments]`\n"
 	cmds += "Commands:\n```\n"
 	for _, key := range keys {
 		cmds += fmt.Sprintf("%s - %s\n", key, CmdFuncs[key].help)
