@@ -36,7 +36,7 @@ func InitCmds() {
 		"here":    CmdFuncHelpType{cmdHere, "Allows the bot to insult users in this channel", false},
 		"nothere": CmdFuncHelpType{cmdNotHere, "Restricts the bot from insulting users in this channel", true},
 		"version": CmdFuncHelpType{cmdVersion, "Outputs the current bot version", true},
-		"insult":  CmdFuncHelpType{cmdInsult, "Insults user mentioned in [arguments]", true},
+		"insult":  CmdFuncHelpType{cmdInsult, "Insults user mentioned in [arguments]. Leave [arguments] blank to insult a random user in the server", true},
 		//"rate":  CmdFuncHelpType{cmdRate, "Rate the insult dished out", true},
 		"stats":  CmdFuncHelpType{cmdStats, "Displays stats about this bot", true},
 		"define": CmdFuncHelpType{cmdDefine, "Displays definition of [arguments]", true},
