@@ -37,9 +37,13 @@ func InitCmds() {
 		"nothere": CmdFuncHelpType{cmdNotHere, "Restricts the bot from insulting users in this channel", true},
 		"version": CmdFuncHelpType{cmdVersion, "Outputs the current bot version", true},
 		"insult":  CmdFuncHelpType{cmdInsult, "Insults user mentioned in [arguments]. Leave [arguments] blank to insult a random user in the server", true},
-		//"rate":  CmdFuncHelpType{cmdRate, "Rate the insult dished out", true},
-		"stats":  CmdFuncHelpType{cmdStats, "Displays stats about this bot", true},
-		"define": CmdFuncHelpType{cmdDefine, "Displays definition of [arguments]", true},
+		"rate":    CmdFuncHelpType{cmdRate, "Rate the insult dished out. Use 'up' or 'down'", true},
+		"stats":   CmdFuncHelpType{cmdStats, "Displays stats about this bot", true},
+		"define":  CmdFuncHelpType{cmdDefine, "Displays definition of [arguments]", true},
+		"best":    CmdFuncHelpType{cmdBest, "~insult that selects the highest rated", true},
+		"worst":   CmdFuncHelpType{cmdWorst, "~insult that selects the lowest rated", true},
+		"good":    CmdFuncHelpType{cmdGood, "~insult that selects only positive rate", true},
+		"bad":     CmdFuncHelpType{cmdBad, "~insult that selects only negative rated", true},
 	}
 }
 
@@ -105,28 +109,17 @@ func cmdStats(session *discordgo.Session, message *discordgo.MessageCreate, args
 	SendReply(session, message, stats)
 }
 
-func cmdInsult(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
-	if len(args) < 2 {
-		var channel, err = session.Channel(message.ChannelID)
-		if err != nil {
-			fmt.Printf("Could not find channel, %s\n", err)
-			return
-		}
-
-		guild, err := session.Guild(channel.GuildID)
-
-		members := guild.Members
-		user := members[RandomInt(len(members))].User
-
-		args = append(args, user.Mention())
-	}
-
-	reply := NewInsult(args[1])
-	SendReply(session, message, reply)
-}
-
 func cmdRate(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
-
+	if len(args) < 2 {
+		SendReply(session, message, "No rating given")
+		return
+	}
+	switch args[1] {
+	case "up":
+		Rate(1)
+	case "down":
+		Rate(-1)
+	}
 }
 
 func cmdDefine(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
@@ -138,4 +131,68 @@ func cmdDefine(session *discordgo.Session, message *discordgo.MessageCreate, arg
 	definitions := DefineWord(args[1])
 
 	SendReply(session, message, definitions)
+}
+
+func validateInsult(session *discordgo.Session, message *discordgo.MessageCreate, args []string) []string {
+	if len(args) < 2 {
+		var channel, err = session.Channel(message.ChannelID)
+		if err != nil {
+			fmt.Printf("Could not find channel, %s\n", err)
+			return nil
+		}
+
+		guild, err := session.Guild(channel.GuildID)
+
+		members := guild.Members
+		user := members[RandomInt(len(members))].User
+
+		args = append(args, user.Mention())
+	}
+
+	return args
+}
+
+func cmdInsult(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
+	args = validateInsult(session, message, args)
+	if args == nil {
+		return
+	}
+	reply := RandomInsult(args[1])
+	SendReply(session, message, reply)
+}
+
+func cmdBest(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
+	args = validateInsult(session, message, args)
+	if args == nil {
+		return
+	}
+	reply := BestInsult(args[1])
+	SendReply(session, message, reply)
+}
+
+func cmdWorst(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
+	args = validateInsult(session, message, args)
+	if args == nil {
+		return
+	}
+	reply := WorstInsult(args[1])
+	SendReply(session, message, reply)
+}
+
+func cmdGood(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
+	args = validateInsult(session, message, args)
+	if args == nil {
+		return
+	}
+	reply := GoodInsult(args[1])
+	SendReply(session, message, reply)
+}
+
+func cmdBad(session *discordgo.Session, message *discordgo.MessageCreate, args []string) {
+	args = validateInsult(session, message, args)
+	if args == nil {
+		return
+	}
+	reply := BadInsult(args[1])
+	SendReply(session, message, reply)
 }

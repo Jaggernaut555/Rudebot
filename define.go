@@ -32,6 +32,10 @@ func DefineWord(word string) string {
 		reply += fmt.Sprintf("%d. %s\n", i+1, sanitize.HTML(def))
 	}
 
+	if len(definitions) == 0 {
+		reply += "No definitions found"
+	}
+
 	reply += "```"
 
 	return reply
