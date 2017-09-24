@@ -177,7 +177,6 @@ func startsWithVowel(str string) bool {
 func saveInsult(channel string, adj string, noun string) {
 	lastAdjective[channel] = adj
 	lastNoun[channel] = noun
-	saveRatings()
 }
 
 //Creates and insult directed at target, using adj and noun Stores adj and noun for rating
