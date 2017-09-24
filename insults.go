@@ -32,10 +32,8 @@ const (
 )
 
 var (
-	lastNoun      string
-	lastAdjective string
-	lastVerb      string
-	lastAdverb    string
+	lastNoun      map[string]string
+	lastAdjective map[string]string
 
 	NumAdjectives    int
 	Adjectives       []string
@@ -65,16 +63,16 @@ func InitRatings() {
 
 // Load the given rating map from the path
 func loadRatings(list *map[string]int, path string) {
-	if ratingsFile, err := os.Open(path); os.IsNotExist(err) {
-		ratingsFile.Close()
+	ratingsFile, err := os.Open(path)
+	defer ratingsFile.Close()
+	if os.IsNotExist(err) {
 		fmt.Printf("No file %s\n", path)
 	} else {
 		decoder := gob.NewDecoder(ratingsFile)
 		err = decoder.Decode(list)
 		if err != nil {
-			fmt.Printf("Error loading file %s: %s\n", path, err)
+			log.Printf("Error loading file %s: %s\n", path, err)
 		}
-		ratingsFile.Close()
 		fmt.Printf("loaded %d ratings from %s\n", len(*list), path)
 	}
 }
@@ -101,9 +99,9 @@ func saveMap(data map[string]int, path string) {
 }
 
 //Rates last used adjective and noun, changing rating by adding given value
-func Rate(value int) {
-	nounRatings[lastNoun] += value
-	adjectiveRatings[lastAdjective] += value
+func Rate(channel string, value int) {
+	nounRatings[lastNoun[channel]] += value
+	adjectiveRatings[lastAdjective[channel]] += value
 
 	saveRatings()
 }
@@ -115,6 +113,9 @@ func InitInsults() {
 	loadWords(adjectivePath, &Adjectives, &NumAdjectives)
 	loadWords(adverbPath, &Adverbs, &NumAdverbs)
 	loadWords(verbPath, &Verbs, &NumVerbs)
+
+	lastAdjective = map[string]string{}
+	lastNoun = map[string]string{}
 }
 
 func loadWords(path string, words *[]string, num *int) {
@@ -170,14 +171,14 @@ func startsWithVowel(str string) bool {
 }
 
 //sets lastAdjective to adj and lastNoun to noun
-func saveInsult(adj string, noun string) {
-	lastAdjective = adj
-	lastNoun = noun
+func saveInsult(channel string, adj string, noun string) {
+	lastAdjective[channel] = adj
+	lastNoun[channel] = noun
 	saveRatings()
 }
 
 //Creates and insult directed at target, using adj and noun Stores adj and noun for rating
-func createInsult(target string, adj string, noun string) string {
+func createInsult(channel string, target string, adj string, noun string) string {
 	_, ok := nounRatings[noun]
 	if !ok {
 		nounRatings[noun] = 0
@@ -188,7 +189,7 @@ func createInsult(target string, adj string, noun string) string {
 		adjectiveRatings[adj] = 0
 	}
 
-	saveInsult(adj, noun)
+	saveInsult(channel, adj, noun)
 
 	var insult string
 
@@ -201,11 +202,18 @@ func createInsult(target string, adj string, noun string) string {
 	return insult
 }
 
-func RandomInsult(target string) string {
+func RandomInsult(channel string, target string) string {
 	if len(Nouns) == 0 || len(Adjectives) == 0 {
 		return "Not enough valid words"
 	}
-	return createInsult(target, Adjectives[rand.Intn(NumAdjectives)], Nouns[rand.Intn(NumNouns)])
+	return createInsult(channel, target, Adjectives[rand.Intn(NumAdjectives)], Nouns[rand.Intn(NumNouns)])
+}
+
+func LastInsult(channel string, target string) string {
+	if lastNoun[channel] == "" || lastAdjective[channel] == "" {
+		return "No previous insult"
+	}
+	return createInsult(channel, target, lastAdjective[channel], lastNoun[channel])
 }
 
 func splitPositive(words pairList) pairList {
@@ -236,12 +244,12 @@ func splitNegative(words pairList) pairList {
 	return newWords
 }
 
-func GoodInsult(target string) string {
+func GoodInsult(channel string, target string) string {
 	if len(nounRatings) == 0 || len(adjectiveRatings) == 0 {
 		return "No rated insults"
 	}
 
-	adjectives, nouns := getRatingList()
+	adjectives, nouns := getRatingsLists()
 
 	sort.Sort(sort.Reverse(nouns))
 	sort.Sort(sort.Reverse(adjectives))
@@ -256,15 +264,15 @@ func GoodInsult(target string) string {
 	adj := adjectives[rand.Intn(len(adjectives))].Key
 	noun := nouns[rand.Intn(len(nouns))].Key
 
-	return createInsult(target, adj, noun)
+	return createInsult(channel, target, adj, noun)
 }
 
-func BadInsult(target string) string {
+func BadInsult(channel string, target string) string {
 	if len(nounRatings) == 0 || len(adjectiveRatings) == 0 {
 		return "No rated insults"
 	}
 
-	adjectives, nouns := getRatingList()
+	adjectives, nouns := getRatingsLists()
 
 	sort.Sort(nouns)
 	sort.Sort(adjectives)
@@ -279,15 +287,15 @@ func BadInsult(target string) string {
 	adj := adjectives[rand.Intn(len(adjectives))].Key
 	noun := nouns[rand.Intn(len(nouns))].Key
 
-	return createInsult(target, adj, noun)
+	return createInsult(channel, target, adj, noun)
 }
 
-func BestInsult(target string) string {
+func BestInsult(channel string, target string) string {
 	if len(nounRatings) == 0 || len(adjectiveRatings) == 0 {
 		return "No rated insults"
 	}
 
-	adjectives, nouns := getRatingList()
+	adjectives, nouns := getRatingsLists()
 
 	sort.Sort(sort.Reverse(nouns))
 	sort.Sort(sort.Reverse(adjectives))
@@ -295,15 +303,15 @@ func BestInsult(target string) string {
 	adj := adjectives[0].Key
 	noun := nouns[0].Key
 
-	return createInsult(target, adj, noun)
+	return createInsult(channel, target, adj, noun)
 }
 
-func WorstInsult(target string) string {
+func WorstInsult(channel string, target string) string {
 	if len(nounRatings) == 0 || len(adjectiveRatings) == 0 {
 		return "No rated insults"
 	}
 
-	adjectives, nouns := getRatingList()
+	adjectives, nouns := getRatingsLists()
 
 	sort.Sort(nouns)
 	sort.Sort(adjectives)
@@ -311,10 +319,10 @@ func WorstInsult(target string) string {
 	adj := adjectives[0].Key
 	noun := nouns[0].Key
 
-	return createInsult(target, adj, noun)
+	return createInsult(channel, target, adj, noun)
 }
 
-func getRatingList() (pairList, pairList) {
+func getRatingsLists() (pairList, pairList) {
 	var nouns pairList
 	for k, v := range nounRatings {
 		nouns = append(nouns, pair{k, v})
@@ -327,13 +335,6 @@ func getRatingList() (pairList, pairList) {
 	sort.Sort(sort.Reverse(adjectives))
 
 	return adjectives, nouns
-}
-
-func LastInsult(target string) string {
-	if lastNoun == "" || lastAdjective == "" {
-		return "No previous insult"
-	}
-	return createInsult(target, lastAdjective, lastNoun)
 }
 
 func (p pairList) Len() int           { return len(p) }

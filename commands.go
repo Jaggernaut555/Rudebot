@@ -118,13 +118,13 @@ func cmdRate(session *discordgo.Session, message *discordgo.MessageCreate, args 
 	}
 	switch args[1] {
 	case "lmao":
-		Rate(2)
+		Rate(message.ChannelID, 2)
 	case "up":
-		Rate(1)
+		Rate(message.ChannelID, 1)
 	case "down":
-		Rate(-1)
+		Rate(message.ChannelID, -1)
 	case "trash":
-		Rate(-2)
+		Rate(message.ChannelID, -2)
 	default:
 		SendReply(session, message, "No Rating Given")
 	}
@@ -166,7 +166,7 @@ func cmdInsult(session *discordgo.Session, message *discordgo.MessageCreate, arg
 		fmt.Printf("Could not create valid insult")
 		return
 	}
-	reply := RandomInsult(args[1])
+	reply := RandomInsult(message.ChannelID, args[1])
 	SendReply(session, message, reply)
 }
 
@@ -176,7 +176,7 @@ func cmdBest(session *discordgo.Session, message *discordgo.MessageCreate, args 
 		fmt.Printf("Could not create valid insult")
 		return
 	}
-	reply := BestInsult(args[1])
+	reply := BestInsult(message.ChannelID, args[1])
 	SendReply(session, message, reply)
 }
 
@@ -186,7 +186,7 @@ func cmdWorst(session *discordgo.Session, message *discordgo.MessageCreate, args
 		fmt.Printf("Could not create valid insult")
 		return
 	}
-	reply := WorstInsult(args[1])
+	reply := WorstInsult(message.ChannelID, args[1])
 	SendReply(session, message, reply)
 }
 
@@ -196,7 +196,7 @@ func cmdGood(session *discordgo.Session, message *discordgo.MessageCreate, args 
 		fmt.Printf("Could not create valid insult")
 		return
 	}
-	reply := GoodInsult(args[1])
+	reply := GoodInsult(message.ChannelID, args[1])
 	SendReply(session, message, reply)
 }
 
@@ -206,7 +206,7 @@ func cmdBad(session *discordgo.Session, message *discordgo.MessageCreate, args [
 		fmt.Printf("Could not create valid insult")
 		return
 	}
-	reply := BadInsult(args[1])
+	reply := BadInsult(message.ChannelID, args[1])
 	SendReply(session, message, reply)
 }
 
@@ -216,6 +216,6 @@ func cmdLast(session *discordgo.Session, message *discordgo.MessageCreate, args 
 		fmt.Printf("Could not create valid insult")
 		return
 	}
-	reply := LastInsult(args[1])
+	reply := LastInsult(message.ChannelID, args[1])
 	SendReply(session, message, reply)
 }
