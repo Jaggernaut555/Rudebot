@@ -59,57 +59,44 @@ func InitRatings() {
 		fmt.Printf("Creating ratings directory %s\n", ratingPath)
 	}
 
-	if ratingsFile, err := os.Open(nounRatingPath); os.IsNotExist(err) {
-		ratingsFile.Close()
-		fmt.Printf("No file %s\n", nounRatingPath)
-	} else {
-		decoder := gob.NewDecoder(ratingsFile)
-		err = decoder.Decode(&nounRatings)
-		if err != nil {
-			fmt.Printf("Error loading file %s: %s\n", nounRatingPath, err)
-		}
-		ratingsFile.Close()
-		fmt.Printf("loaded %d nouns\n", len(nounRatings))
-	}
-
-	if ratingsFile, err := os.Open(adjectiveRatingPath); os.IsNotExist(err) {
-		ratingsFile.Close()
-		fmt.Printf("No file %s\n", adjectiveRatingPath)
-	} else {
-		decoder := gob.NewDecoder(ratingsFile)
-		err = decoder.Decode(&adjectiveRatings)
-		if err != nil {
-			fmt.Printf("Error loading files %s: %s\n", adjectiveRatingPath, err)
-		}
-		ratingsFile.Close()
-		fmt.Printf("loaded %d adjectives\n", len(adjectiveRatings))
-	}
-
+	loadRatings(&nounRatings, nounRatingPath)
+	loadRatings(&adjectiveRatings, adjectiveRatingPath)
 }
 
+// Load the given rating map from the path
+func loadRatings(list *map[string]int, path string) {
+	if ratingsFile, err := os.Open(path); os.IsNotExist(err) {
+		ratingsFile.Close()
+		fmt.Printf("No file %s\n", path)
+	} else {
+		decoder := gob.NewDecoder(ratingsFile)
+		err = decoder.Decode(list)
+		if err != nil {
+			fmt.Printf("Error loading file %s: %s\n", path, err)
+		}
+		ratingsFile.Close()
+		fmt.Printf("loaded %d ratings from %s\n", len(*list), path)
+	}
+}
+
+// save all ratings maps
 func saveRatings() {
-	nounFile, err := os.OpenFile(nounRatingPath, os.O_RDONLY|os.O_CREATE, 0666)
-	defer nounFile.Close()
+	saveMap(nounRatings, nounRatingPath)
+	saveMap(adjectiveRatings, adjectiveRatingPath)
+}
+
+// save the ratings map to given path
+func saveMap(data map[string]int, path string) {
+	ratingFile, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
+	defer ratingFile.Close()
 	if err != nil {
-		log.Printf("failed to open or create file %s: %s\n", nounRatingPath, err)
+		log.Printf("failed to open or create file %s: %s\n", path, err)
 	}
 
-	encoder := gob.NewEncoder(nounFile)
+	encoder := gob.NewEncoder(ratingFile)
 
-	if err := encoder.Encode(nounRatings); err != nil {
-		log.Printf("Failed to save ratings to %s: %s", nounRatingPath, err)
-	}
-
-	adjFile, err := os.OpenFile(adjectiveRatingPath, os.O_RDONLY|os.O_CREATE, 0666)
-	defer adjFile.Close()
-	if err != nil {
-		log.Printf("failed to open or create file %s: %s\n", adjectiveRatingPath, err)
-	}
-
-	encoder = gob.NewEncoder(adjFile)
-
-	if err := encoder.Encode(adjectiveRatings); err != nil {
-		log.Printf("Failed to save ratings to %s: %s", adjectiveRatingPath, err)
+	if err := encoder.Encode(data); err != nil {
+		log.Printf("Failed to save ratings to %s: %s", path, err)
 	}
 }
 
@@ -128,31 +115,6 @@ func InitInsults() {
 	loadWords(adjectivePath, &Adjectives, &NumAdjectives)
 	loadWords(adverbPath, &Adverbs, &NumAdverbs)
 	loadWords(verbPath, &Verbs, &NumVerbs)
-	/*
-		Nouns, NumNouns, err = readWords(nounPath)
-		if err != nil {
-			log.Printf("failed to find file %s: %s\n", nounPath, err)
-			return
-		}
-
-		Adjectives, NumAdjectives, err = readWords(adjectivePath)
-		if err != nil {
-			log.Printf("failed to find file %s: %s\n", adjectivePath, err)
-			return
-		}
-
-		Adverbs, NumAdverbs, err = readWords(adverbPath)
-		if err != nil {
-			log.Printf("failed to find file %s: %s\n", adverbPath, err)
-			return
-		}
-
-		Verbs, NumVerbs, err = readWords(verbPath)
-		if err != nil {
-			log.Printf("failed to find file %s: %s\n", verbPath, err)
-			return
-		}
-	*/
 }
 
 func loadWords(path string, words *[]string, num *int) {
