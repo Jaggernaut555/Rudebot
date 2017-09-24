@@ -53,7 +53,10 @@ func InitRatings() {
 
 	// If rating path does not exist create it
 	if _, err := os.Stat(ratingPath); os.IsNotExist(err) {
-		os.Mkdir(ratingPath, 0666)
+		err = os.Mkdir(ratingPath, 0755)
+		if err != nil {
+			log.Printf("Error creating directory: %s\n", err)
+		}
 		fmt.Printf("Creating ratings directory %s\n", ratingPath)
 	}
 
