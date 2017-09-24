@@ -1,4 +1,4 @@
-package main
+package Rudebot
 
 import (
 	"fmt"
@@ -57,25 +57,25 @@ func InitInsults() {
 	rand.Seed(time.Now().Unix())
 	var err error
 
-	Nouns, NumNouns, err = ReadInput(NounPath)
+	Nouns, NumNouns, err = readInput(NounPath)
 	if err != nil {
 		log.Printf("failed to find noun file %s: %s\n", NounPath, err)
 		return
 	}
 
-	Adjectives, NumAdjectives, err = ReadInput(AdjectivePath)
+	Adjectives, NumAdjectives, err = readInput(AdjectivePath)
 	if err != nil {
 		log.Printf("failed to find adjective file %s: %s\n", AdjectivePath, err)
 		return
 	}
 
-	Adverbs, NumAdverbs, err = ReadInput(AdverbPath)
+	Adverbs, NumAdverbs, err = readInput(AdverbPath)
 	if err != nil {
 		log.Printf("failed to find adverb file %s: %s\n", AdverbPath, err)
 		return
 	}
 
-	Verbs, NumVerbs, err = ReadInput(VerbPath)
+	Verbs, NumVerbs, err = readInput(VerbPath)
 	if err != nil {
 		log.Printf("failed to find verb file %s: %s\n", VerbPath, err)
 		return
@@ -83,31 +83,31 @@ func InitInsults() {
 }
 
 //turns file into string array, array length, and possible error
-func ReadInput(path string) ([]string, int, error) {
+func readInput(path string) ([]string, int, error) {
 	data, err := ioutil.ReadFile(path)
-	str, num := SanitizeInput(data)
+	str, num := sanitizeInput(data)
 	return str, num, err
 }
 
 //turns byte array into string array and string array length
-func SanitizeInput(data []byte) ([]string, int) {
+func sanitizeInput(data []byte) ([]string, int) {
 	dataString := string(data)
 	dataLines := strings.Split(dataString, "\n")
 
-	CleanInput(dataLines)
+	cleanInput(dataLines)
 
 	return dataLines, len(dataLines)
 }
 
 //Clean all white space for each string in array
-func CleanInput(input []string) {
+func cleanInput(input []string) {
 	for i, word := range input {
-		input[i] = StripWhiteSpace(word)
+		input[i] = stripWhiteSpace(word)
 	}
 }
 
 //Clean all white space from string and return it
-func StripWhiteSpace(str string) string {
+func stripWhiteSpace(str string) string {
 	return strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
 			return -1
@@ -116,7 +116,7 @@ func StripWhiteSpace(str string) string {
 	}, str)
 }
 
-func StartsWithVowel(str string) bool {
+func startsWithVowel(str string) bool {
 	chr := str[0]
 	switch chr {
 	case 'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U':
@@ -126,13 +126,13 @@ func StartsWithVowel(str string) bool {
 }
 
 //sets LastAdjective to adj and LastNoun to noun
-func SaveInsult(adj string, noun string) {
+func saveInsult(adj string, noun string) {
 	LastAdjective = adj
 	LastNoun = noun
 }
 
 //Creates and insult directed at target, using adj and noun Stores adj and noun for rating
-func CreateInsult(target string, adj string, noun string) string {
+func createInsult(target string, adj string, noun string) string {
 	_, ok := NounRatings[noun]
 	if !ok {
 		NounRatings[noun] = 0
@@ -143,11 +143,11 @@ func CreateInsult(target string, adj string, noun string) string {
 		AdjectiveRatings[adj] = 0
 	}
 
-	SaveInsult(adj, noun)
+	saveInsult(adj, noun)
 
 	var insult string
 
-	if StartsWithVowel(adj) {
+	if startsWithVowel(adj) {
 		insult = fmt.Sprintf("%s is an %s %s (%d,%d)", target, adj, noun, AdjectiveRatings[adj], NounRatings[noun])
 	} else {
 		insult = fmt.Sprintf("%s is a %s %s (%d,%d)", target, adj, noun, AdjectiveRatings[adj], NounRatings[noun])
@@ -160,11 +160,7 @@ func RandomInsult(target string) string {
 	if len(Nouns) == 0 || len(Adjectives) == 0 {
 		return "Not enough valid words"
 	}
-	return CreateInsult(target, Adjectives[RandomInt(NumAdjectives)], Nouns[RandomInt(NumNouns)])
-}
-
-func RandomInt(max int) int {
-	return rand.Intn(max)
+	return createInsult(target, Adjectives[rand.Intn(NumAdjectives)], Nouns[rand.Intn(NumNouns)])
 }
 
 //Rates last used adjective and noun, changing rating by adding given value
@@ -173,7 +169,7 @@ func Rate(value int) {
 	AdjectiveRatings[LastAdjective] += value
 }
 
-func SplitPositive(words PairList) PairList {
+func splitPositive(words PairList) PairList {
 	var lastZero int
 	for k, v := range words {
 		if v.Value >= 0 {
@@ -187,7 +183,7 @@ func SplitPositive(words PairList) PairList {
 	return newWords
 }
 
-func SplitNegative(words PairList) PairList {
+func splitNegative(words PairList) PairList {
 	var lastZero int
 	for k, v := range words {
 		if v.Value <= 0 {
@@ -206,22 +202,22 @@ func GoodInsult(target string) string {
 		return "No rated insults"
 	}
 
-	adjectives, nouns := GetRatingLists()
+	adjectives, nouns := getRatingList()
 
 	sort.Sort(sort.Reverse(nouns))
 	sort.Sort(sort.Reverse(adjectives))
 
-	nouns = SplitPositive(nouns)
-	adjectives = SplitPositive(adjectives)
+	nouns = splitPositive(nouns)
+	adjectives = splitPositive(adjectives)
 
 	if len(nouns) == 0 || len(adjectives) == 0 {
 		return "No good insults"
 	}
 
-	adj := adjectives[RandomInt(len(adjectives))].Key
-	noun := nouns[RandomInt(len(nouns))].Key
+	adj := adjectives[rand.Intn(len(adjectives))].Key
+	noun := nouns[rand.Intn(len(nouns))].Key
 
-	return CreateInsult(target, adj, noun)
+	return createInsult(target, adj, noun)
 }
 
 func BadInsult(target string) string {
@@ -229,22 +225,22 @@ func BadInsult(target string) string {
 		return "No rated insults"
 	}
 
-	adjectives, nouns := GetRatingLists()
+	adjectives, nouns := getRatingList()
 
 	sort.Sort(nouns)
 	sort.Sort(adjectives)
 
-	nouns = SplitNegative(nouns)
-	adjectives = SplitNegative(adjectives)
+	nouns = splitNegative(nouns)
+	adjectives = splitNegative(adjectives)
 
 	if len(nouns) == 0 || len(adjectives) == 0 {
 		return "No bad insults"
 	}
 
-	adj := adjectives[RandomInt(len(adjectives))].Key
-	noun := nouns[RandomInt(len(nouns))].Key
+	adj := adjectives[rand.Intn(len(adjectives))].Key
+	noun := nouns[rand.Intn(len(nouns))].Key
 
-	return CreateInsult(target, adj, noun)
+	return createInsult(target, adj, noun)
 }
 
 func BestInsult(target string) string {
@@ -252,7 +248,7 @@ func BestInsult(target string) string {
 		return "No rated insults"
 	}
 
-	adjectives, nouns := GetRatingLists()
+	adjectives, nouns := getRatingList()
 
 	sort.Sort(sort.Reverse(nouns))
 	sort.Sort(sort.Reverse(adjectives))
@@ -260,7 +256,7 @@ func BestInsult(target string) string {
 	adj := adjectives[0].Key
 	noun := nouns[0].Key
 
-	return CreateInsult(target, adj, noun)
+	return createInsult(target, adj, noun)
 }
 
 func WorstInsult(target string) string {
@@ -268,7 +264,7 @@ func WorstInsult(target string) string {
 		return "No rated insults"
 	}
 
-	adjectives, nouns := GetRatingLists()
+	adjectives, nouns := getRatingList()
 
 	sort.Sort(nouns)
 	sort.Sort(adjectives)
@@ -276,10 +272,10 @@ func WorstInsult(target string) string {
 	adj := adjectives[0].Key
 	noun := nouns[0].Key
 
-	return CreateInsult(target, adj, noun)
+	return createInsult(target, adj, noun)
 }
 
-func GetRatingLists() (PairList, PairList) {
+func getRatingList() (PairList, PairList) {
 	var nouns PairList
 	for k, v := range NounRatings {
 		nouns = append(nouns, Pair{k, v})
@@ -298,7 +294,7 @@ func LastInsult(target string) string {
 	if LastNoun == "" || LastAdjective == "" {
 		return "No previous insult"
 	}
-	return CreateInsult(target, LastAdjective, LastNoun)
+	return createInsult(target, LastAdjective, LastNoun)
 }
 
 func (p PairList) Len() int           { return len(p) }

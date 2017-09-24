@@ -1,7 +1,8 @@
-package main
+package Rudebot
 
 import (
 	"fmt"
+	"math/rand"
 	"sort"
 	"strings"
 
@@ -151,7 +152,7 @@ func validateInsult(session *discordgo.Session, message *discordgo.MessageCreate
 		guild, err := session.Guild(channel.GuildID)
 
 		members := guild.Members
-		user := members[RandomInt(len(members))].User
+		user := members[rand.Intn(len(members))].User
 
 		args = append(args, user.Mention())
 	}

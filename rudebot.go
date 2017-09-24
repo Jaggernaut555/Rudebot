@@ -1,4 +1,4 @@
-package main
+package Rudebot
 
 import (
 	"flag"
@@ -14,18 +14,18 @@ import (
 
 // Constants
 const (
-	Version = "v0.3.5"
+	Version = "v0.3.6"
 )
 
 // Global vars
 var (
-	Token    string
+	token    string
 	Channels map[string]bool
 )
 
 func init() {
 	fmt.Println("Rudebot lives...")
-	flag.StringVar(&Token, "t", "", "Discord Authentication Token")
+	flag.StringVar(&token, "t", "", "Discord Authentication token")
 	flag.Parse()
 
 	Channels = map[string]bool{}
@@ -35,12 +35,12 @@ func init() {
 }
 
 func main() {
-	if Token == "" {
+	if token == "" {
 		log.Println("You must provide a Discord authentication token (-t)")
 		return
 	}
 
-	dg, err := discordgo.New("Bot " + Token)
+	dg, err := discordgo.New("Bot " + token)
 	if err != nil {
 		log.Println("error creating Discord session,", err)
 		return

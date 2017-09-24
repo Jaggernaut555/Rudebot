@@ -1,4 +1,4 @@
-package main
+package Rudebot
 
 import (
 	"fmt"
