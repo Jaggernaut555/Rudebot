@@ -1,4 +1,4 @@
-package Rudebot
+package main
 
 import (
 	"flag"
@@ -14,7 +14,7 @@ import (
 
 // Constants
 const (
-	Version = "v0.3.6"
+	Version = "v0.3.11"
 )
 
 // Global vars
