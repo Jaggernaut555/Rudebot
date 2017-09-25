@@ -180,20 +180,9 @@ func saveInsult(channel string, adj string, noun string) {
 }
 
 //Creates and insult directed at target, using adj and noun Stores adj and noun for rating
-func createInsult(channel string, target string, adj string, noun string) string {
-	_, ok := nounRatings[noun]
-	if !ok {
-		nounRatings[noun] = 0
-	}
-
-	_, ok = adjectiveRatings[adj]
-	if !ok {
-		adjectiveRatings[adj] = 0
-	}
-
+func createInsult(channel string, target string, adj string, noun string) (insult string) {
 	saveInsult(channel, adj, noun)
-
-	var insult string
+	Rate(channel, 0)
 
 	if startsWithVowel(adj) {
 		insult = fmt.Sprintf("%s is an %s %s (%d,%d)", target, adj, noun, adjectiveRatings[adj], nounRatings[noun])
